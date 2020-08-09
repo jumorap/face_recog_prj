@@ -36,8 +36,6 @@ def find_encodings(images):
         encode_face = face_recognition.face_encodings(img)[0]
         encode_list.append(encode_face)
 
-        cv2.imshow(img)
-
     return encode_list
 
 # [send_mail_record] permit send an mail to tell us
@@ -50,7 +48,7 @@ def send_mail_record(name):
     # variable like password
     sender_address = 'yourmail@outlook.com'
 
-    # Like server in this case we use Outlook for confort,
+    # Like server in this case we use Outlook for comfort,
     # but we can select the server of our preference like gmail
     session = smtplib.SMTP("smtp.outlook.com", 587)
     session.starttls()
@@ -93,17 +91,16 @@ while True:
         match_face = face_recognition.compare_faces(encode_list_known_faces, encode_face)
         face_dista = face_recognition.face_distance(encode_list_known_faces, encode_face)
 
-        print(face_dista)
-
         match_index = np.argmin(face_dista)
 
+        y1, x2, y2, x1 = face_loc
+        y1, x2, y2, x1 = y1 * 4, x2 * 4, y2 * 4, x1 * 4
+        name = "UNKNOWN"
         if match_face[match_index]:
             # When the conditions is met, is select the name of person who
             # appear in camera if they are registered on file "images" with
             # their respective name
             name = class_names[match_index].upper()
-
-            print(name)
 
             # Is generated a box where tanks to library 'face_recognition', we
             # trace the face of our users, and is multiplied for 4, because
@@ -113,11 +110,8 @@ while True:
             #
             # Both within, we define the color of border and background of our
             # boxes, too is defined the font, their size and color
-            y1, x2, y2, x1 = face_loc
-            y1, x2, y2, x1 = y1*4, x2*4, y2*4, x1*4
             cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 3)
             cv2.rectangle(img, (x1, y2-35), (x2, y2), (0, 255, 0), cv2.FILLED)
-            cv2.putText(img, name, (x1+5, y2-10), cv2.FONT_ITALIC, 0.7, (255, 255, 255), 2)
 
             # After match the user's face, we question if the person was looked, if is
             # so, then won't happen something, else we gonna add their name in [after_detect]
@@ -125,6 +119,11 @@ while True:
             if name not in after_detect:
                 after_detect.append(name)
                 send_mail_record(name)
+        else:
+            cv2.rectangle(img, (x1, y1), (x2, y2), (0, 0, 255), 3)
+            cv2.rectangle(img, (x1, y2-35), (x2, y2), (0, 0, 255), cv2.FILLED)
+
+        cv2.putText(img, name, (x1 + 5, y2 - 10), cv2.FONT_ITALIC, 0.7, (255, 255, 255), 2)
 
     # With cv2.imshow we open a window where look the "camera process"
     # and the name of who appear in camera
