@@ -3,8 +3,11 @@ import cv2
 import face_recognition
 import numpy as np
 import smtplib
+import time
 from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
+from email.mime.image import MIMEImage
+from gtts import gTTS
+from playsound import playsound
 
 path = 'Images'
 images = []
@@ -38,15 +41,16 @@ def find_encodings(images):
 
     return encode_list
 
+
 # [send_mail_record] permit send an mail to tell us
 # when somebody appear in camera, and advise it
-def send_mail_record(name):
+def send_mail_record(name, img):
     # Next mail is of your preference.
     #
     # Like [sender_address] we define the string of the mail from
     # where we wanna send the message, and we can define another
     # variable like password
-    sender_address = 'yourmail@outlook.com'
+    sender_address = 'your_email@outlook.com'
 
     # Like server in this case we use Outlook for comfort,
     # but we can select the server of our preference like gmail
@@ -54,20 +58,52 @@ def send_mail_record(name):
     session.starttls()
     # Here we use [session] to login in our account from where the
     # message gonna be send
-    session.login(sender_address, 'yourpassword')
+    session.login(sender_address, 'your_password')
 
-    # We define who send the mail, the subject and content, after
-    # convert the mail to string in a plain mail
+    # We define who send the mail, the subject and content
     message = MIMEMultipart()
     message['From'] = sender_address
-    message['subject'] = 'Hello! There is somebody'
-    mail_content = name + " is in front of camera"
-    message.attach(MIMEText(mail_content, 'plain'))
-    text = message.as_string()
+    message['subject'] = name + ' is in front of the camera'
+
+    # Convert the VideoCapture image [img] in the file [face_img]
+    # to be send in a mail and advise who is in camera.
+    #
+    # [face_img] generate different files of all faces that appeared
+    # front of the camera. This is thought to add new faces only with
+    # one look with a specific and different name depending of date
+    # and hour when was make the picture
+    timer = time.strftime("%d%m%y%H%M%S")
+    face_img = "new_recog/send_image%d.jpg" % int(timer)
+    cv2.imwrite(face_img, img)
+    file = open(face_img, 'rb')
+    attach_image = MIMEImage(file.read())
+    attach_image.add_header('Content-Disposition', 'attachment', filename=face_img)
+    message.attach(attach_image)
 
     # After, we write who gonna receive the message and log out
+    text = message.as_string()
     session.sendmail(sender_address, 'who_receive@mail.com', text)
     session.quit()
+
+
+def say_hello(name, img):
+    # After match the user's face, we question if the person was looked before, if is
+    # so, then won't happen something, else we gonna add their name in [after_detect]
+    # and is called the def [send_mail_record], where we gonna advise who is in camera.
+    # Additional to it, the machine say a message when recognize the face of somebody
+    if name not in after_detect:
+        file_name = "hello.mp3"
+        tts = gTTS(f'¡Hola! ¿Cómo estás {name}?', lang='es-us')
+
+        print(name)
+        # Here there is a bug. Have's to be fixed
+        # with open(file_name, 'wb') as f:
+        #     tts.write_to_fp(f)
+
+        after_detect.append(name)
+        send_mail_record(name, img)
+        playsound(file_name)
+        cv2.imshow("Somebody", img)
 
 
 encode_list_known_faces = find_encodings(images)
@@ -100,7 +136,7 @@ while True:
             # When the conditions is met, is select the name of person who
             # appear in camera if they are registered on file "images" with
             # their respective name
-            name = class_names[match_index].upper()
+            name = class_names[int(match_index)].upper()
 
             # Is generated a box where tanks to library 'face_recognition', we
             # trace the face of our users, and is multiplied for 4, because
@@ -110,20 +146,17 @@ while True:
             #
             # Both within, we define the color of border and background of our
             # boxes, too is defined the font, their size and color
-            cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 3)
-            cv2.rectangle(img, (x1, y2-35), (x2, y2), (0, 255, 0), cv2.FILLED)
+            cv2.rectangle(img, (x1, y1-30), (x2, y2+20), (0, 255, 0), 1)
+            cv2.rectangle(img, (x1, y2-15), (x2, y2+20), (0, 255, 0), cv2.FILLED)
+            cv2.putText(img, name, (x1 + 5, y2+10), cv2.FONT_ITALIC, 0.7, (255, 255, 255), 2)
 
-            # After match the user's face, we question if the person was looked, if is
-            # so, then won't happen something, else we gonna add their name in [after_detect]
-            # and is called the def [send_mail_record], where we gonna advise who is in camera
-            if name not in after_detect:
-                after_detect.append(name)
-                send_mail_record(name)
+            say_hello(name, img)
         else:
-            cv2.rectangle(img, (x1, y1), (x2, y2), (0, 0, 255), 3)
-            cv2.rectangle(img, (x1, y2-35), (x2, y2), (0, 0, 255), cv2.FILLED)
+            cv2.rectangle(img, (x1, y1-30), (x2, y2+20), (0, 0, 255), 1)
+            cv2.rectangle(img, (x1, y2-15), (x2, y2+20), (0, 0, 255), cv2.FILLED)
+            cv2.putText(img, name, (x1 + 5, y2+10), cv2.FONT_ITALIC, 0.7, (255, 255, 255), 2)
 
-        cv2.putText(img, name, (x1 + 5, y2 - 10), cv2.FONT_ITALIC, 0.7, (255, 255, 255), 2)
+            say_hello(name, img)
 
     # With cv2.imshow we open a window where look the "camera process"
     # and the name of who appear in camera
