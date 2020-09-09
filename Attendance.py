@@ -4,10 +4,9 @@ import face_recognition
 import numpy as np
 import smtplib
 import time
+import pyttsx3
 from email.mime.multipart import MIMEMultipart
 from email.mime.image import MIMEImage
-from gtts import gTTS
-from playsound import playsound
 
 path = 'Images'
 images = []
@@ -92,17 +91,23 @@ def say_hello(name, img):
     # and is called the def [send_mail_record], where we gonna advise who is in camera.
     # Additional to it, the machine say a message when recognize the face of somebody
     if name not in after_detect:
-        file_name = "hello.mp3"
-        tts = gTTS(f'¡Hola! ¿Cómo estás {name}?', lang='es-us')
 
         print(name)
-        # Here there is a bug. Have's to be fixed
-        # with open(file_name, 'wb') as f:
-        #     tts.write_to_fp(f)
+
+        # Generate one string concatenated with [name] and one integer that define
+        # the voice rate or voice speed.
+        # After, using pyttsx3 library, we start the 'reader', and is saved in [player]
+        # to after send [say_my_name] to be reader with the speed defined in [new_voice_rate]
+        say_my_name = f'¡Hola! ¿Cómo estás {name}?'
+        new_voice_rate = 145
+
+        player = pyttsx3.init()
+        player.setProperty('rate', new_voice_rate)
+        player.say(say_my_name)
+        player.runAndWait()
 
         after_detect.append(name)
         send_mail_record(name, img)
-        playsound(file_name)
         cv2.imshow("Somebody", img)
 
 
@@ -146,15 +151,15 @@ while True:
             #
             # Both within, we define the color of border and background of our
             # boxes, too is defined the font, their size and color
-            cv2.rectangle(img, (x1, y1-30), (x2, y2+20), (0, 255, 0), 1)
-            cv2.rectangle(img, (x1, y2-15), (x2, y2+20), (0, 255, 0), cv2.FILLED)
-            cv2.putText(img, name, (x1 + 5, y2+10), cv2.FONT_ITALIC, 0.7, (255, 255, 255), 2)
+            cv2.rectangle(img, (x1, y1 - 30), (x2, y2 + 20), (0, 255, 0), 1)
+            cv2.rectangle(img, (x1, y2 - 15), (x2, y2 + 20), (0, 255, 0), cv2.FILLED)
+            cv2.putText(img, name, (x1 + 5, y2 + 10), cv2.FONT_ITALIC, 0.7, (255, 255, 255), 2)
 
             say_hello(name, img)
         else:
-            cv2.rectangle(img, (x1, y1-30), (x2, y2+20), (0, 0, 255), 1)
-            cv2.rectangle(img, (x1, y2-15), (x2, y2+20), (0, 0, 255), cv2.FILLED)
-            cv2.putText(img, name, (x1 + 5, y2+10), cv2.FONT_ITALIC, 0.7, (255, 255, 255), 2)
+            cv2.rectangle(img, (x1, y1 - 30), (x2, y2 + 20), (0, 0, 255), 1)
+            cv2.rectangle(img, (x1, y2 - 15), (x2, y2 + 20), (0, 0, 255), cv2.FILLED)
+            cv2.putText(img, name, (x1 + 5, y2 + 10), cv2.FONT_ITALIC, 0.7, (255, 255, 255), 2)
 
             say_hello(name, img)
 
