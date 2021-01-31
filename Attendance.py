@@ -151,10 +151,8 @@ def start(images, class_names):
             face_dista = face_recognition.face_distance(encode_list_known_faces, encode_face)
 
             match_index = np.argmin(face_dista)
-
             y1, x2, y2, x1 = face_loc
             y1, x2, y2, x1 = y1 * 4, x2 * 4, y2 * 4, x1 * 4
-            name = "UNKNOWN"
 
             if match_face[match_index]:
                 # When the conditions is met, is select the name of person who
