@@ -8,8 +8,16 @@ import pyttsx3
 from email.mime.multipart import MIMEMultipart
 from email.mime.image import MIMEImage
 
+
 # This will be a simple variable that save names that was returned by [say_hello]
 after_detect = []
+
+# Next variables get the e-mail values from "mail.txt", that the user will set
+f = open('mail.txt', 'r')
+your_email = str(f.readline())[:-1]
+your_password = str(f.readline())[:-1]
+who_receive = str(f.readline())[:-1]
+f.close()
 
 
 def cover_files_lunch():
@@ -55,7 +63,7 @@ def send_mail_record(name, img):
     # Like [sender_address] we define the string of the mail from
     # where we wanna send the message, and we can define another
     # variable like password
-    sender_address = 'your_email@outlook.com'
+    sender_address = your_email
 
     # Like server in this case we use Outlook for comfort,
     # but we can select the server of our preference like gmail
@@ -63,7 +71,7 @@ def send_mail_record(name, img):
     session.starttls()
     # Here we use [session] to login in our account from where the
     # message gonna be send
-    session.login(sender_address, 'your_password')
+    session.login(sender_address, your_password)
 
     # We define who send the mail, the subject and content
     message = MIMEMultipart()
@@ -87,7 +95,7 @@ def send_mail_record(name, img):
 
     # After, we write who gonna receive the message and log out
     text = message.as_string()
-    session.sendmail(sender_address, 'who_receive@mail.com', text)
+    session.sendmail(sender_address, who_receive, text)
     session.quit()
 
 
@@ -114,8 +122,9 @@ def say_hello(name, img):
         after_detect.append(name)
         try:
             send_mail_record(name, img)
+            print("Sent")
         except:
-            print("ERROR: Chek the session")
+            print("ERROR: Chek the your connection and file mail.text")
         cv2.imshow("Somebody", img)
 
 
