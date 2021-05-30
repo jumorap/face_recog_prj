@@ -9,6 +9,15 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.image import MIMEImage
 
 
+print("\n______              ______                      ______     _ \n"
+      "|  ___|             | ___ \                     | ___ \   (_)\n"
+      "| |_ __ _  ___ ___  | |_/ /___  ___ ___   __ _  | |_/ / __ _ \n"
+      "|  _/ _` |/ __/ _ \ |    // _ \/ __/ _ \ / _` | |  __/ '__| |\n"
+      "| || (_| | (_|  __/ | |\ \  __/ (_| (_) | (_| | | |  | |  | |\n"
+      "\_| \__,_|\___\___| \_| \_\___|\___\___/ \__, | \_|  |_|  | |\n"
+      "                                          __/ |          _/ |\n"
+      "                                         |___/          |__/\n")
+
 # This will be a simple variable that save names that was returned by [say_hello]
 after_detect = []
 
