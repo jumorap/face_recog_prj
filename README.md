@@ -1,4 +1,4 @@
-<p aligment="center">
+<p align="center">
     <img src="https://cdn.discordapp.com/attachments/766535715327836172/848375844178362408/unknown.png" alt="Logo image of Face recog proj">
 </p>
 
